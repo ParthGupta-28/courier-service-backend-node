@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+model UserDetails{
+  email String @id
+  password String
+  phoneNo String
+  state String
+  city String
+  pincode String
+  address String 
+}
+
+model OrderDetails{
+  orderId String @id
+
+  senderName String
+  senderCity String
+  senderState String
+  senderPincode String
+  senderAddress String
+  senderPhoneNo String
+
+  receiverName String
+  receiverCity String
+  receiverState String
+  receiverPincode String
+  receiverAddress String
+  receiverPhoneNo String
+
+  currentLocation String
+  status String
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
