@@ -1,3 +1,5 @@
+import type { $Enums, Prisma } from "@prisma/client";
+
 export type order = {
   orderId: string;
 
@@ -18,3 +20,11 @@ export type order = {
   currentLocation: string;
   status: string;
 };
+
+export type IOrderCreate = Omit<
+  Prisma.OrderDetailsCreateInput,
+  "status" | "orderId"
+>;
+
+export type OrderStatus = $Enums.OrderStatus;
+export const OrderStatus = ["Completed", "Pending"] as const;
