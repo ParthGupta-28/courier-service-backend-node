@@ -12,6 +12,7 @@ export const CreateOrder = async (
   data: IOrderCreate
 ): Promise<Omit<Prisma.OrderDetailsCreateInput, "user">> => {
   const status = "Pending";
+  const currentLocation = `${data.senderAddress}, ${data.senderCity}, ${data.senderPincode}, India`;
   const orderId = nanoid();
 
   const order = await prismaClient.orderDetails.findFirst({
@@ -28,6 +29,7 @@ export const CreateOrder = async (
       ...data,
       orderId,
       status,
+      currentLocation,
     },
   });
 
@@ -43,4 +45,17 @@ export const GetAllOrders = async (email: string) => {
     },
   });
   return orders;
+};
+
+export const FindByOrderId = async (orderId: string) => {
+  const order = await prismaClient.orderDetails.findFirst({
+    where: {
+      orderId: orderId,
+    },
+  });
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+  return order;
 };

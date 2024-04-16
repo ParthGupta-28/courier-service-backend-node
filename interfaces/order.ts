@@ -23,7 +23,7 @@ export type order = {
 
 export type IOrderCreate = Omit<
   Prisma.OrderDetailsCreateInput,
-  "status" | "orderId"
+  "status" | "orderId" | "currentLocation"
 >;
 
 export type OrderStatus = $Enums.OrderStatus;
