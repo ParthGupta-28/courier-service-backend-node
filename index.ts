@@ -1,27 +1,41 @@
 import type { Express, Request, Response } from "express";
-import { CreateUser, FindUser, LoginUser, UpdateUser } from "./service/user";
+import { CreateUser, FindUser, UpdateUser } from "./service/user";
 import { CreateOrder, FindByOrderId, GetAllOrders } from "./service/order";
+import { MapUserToRes } from "./utility/utility";
+import { CreateUserBL, LoginUserBL, UpdateUserBL } from "./buisnesslayer/user";
 
 const express = require("express");
+const cors = require("cors");
 const app: Express = express();
 
+app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req: Request, res: Response) => {
-  console.log(req.query);
   res.send("Hello World!");
 });
 
-app.post("/users", async (req: Request, res: Response) => {
-  const user = await CreateUser(req.body).catch((err) => {
+app.post("/users/login", async (req: Request, res: Response) => {
+  const user = await LoginUserBL(req.body).catch((err) => {
     res.status(400).send(err.message);
   });
+
   if (user) {
-    res.send(user);
+    res.send(MapUserToRes(user));
   }
 });
 
-app.post("/users/{email}/order", async (req: Request, res: Response) => {
+app.post("/users", async (req: Request, res: Response) => {
+  const user = await CreateUserBL(req.body).catch((err) => {
+    res.status(400).send(err.message);
+  });
+  if (user) {
+    res.send(MapUserToRes(user));
+  }
+});
+
+app.post("/users/:email/order", async (req: Request, res: Response) => {
   const email = req.params.email;
   const user = await FindUser(email).catch((err) => {
     res.status(400).send(err.message);
@@ -31,16 +45,21 @@ app.post("/users/{email}/order", async (req: Request, res: Response) => {
     return;
   }
 
-  const order = await CreateOrder(req.body).catch((err) => {
+  const { ["email"]: _, ...orderDetail } = req.body;
+
+  const order = await CreateOrder({
+    ...orderDetail,
+    userDetailsEmail: email,
+  }).catch((err) => {
     res.status(400).send(err.message);
   });
 
   if (order) {
-    res.send(order);
+    res.send(order.orderId);
   }
 });
 
-app.get("/users/{email}/orders", async (req: Request, res: Response) => {
+app.get("/users/:email/orders", async (req: Request, res: Response) => {
   const email = req.params.email;
   const user = await FindUser(email).catch((err) => {
     res.status(400).send(err.message);
@@ -59,17 +78,7 @@ app.get("/users/{email}/orders", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/login", async (req: Request, res: Response) => {
-  const user = await LoginUser(req.body).catch((err) => {
-    res.status(400).send(err.message);
-  });
-
-  if (user) {
-    res.send(user);
-  }
-});
-
-app.get("users/{orderId}", async (req: Request, res: Response) => {
+app.get("/users/:orderId", async (req: Request, res: Response) => {
   const orderId = req.params.orderId;
   const order = await FindByOrderId(orderId).catch((err) => {
     res.status(400).send(err.message);
@@ -81,21 +90,26 @@ app.get("users/{orderId}", async (req: Request, res: Response) => {
 });
 
 app.put(
-  "/users/update/{email}/{password}",
+  "/users/update/:email/:password",
   async (req: Request, res: Response) => {
     const email = req.params.email;
     const password = req.params.password;
-    const user = await UpdateUser({ ...req.body, password }).catch((err) => {
+
+    const updatedUser = await UpdateUserBL({
+      ...req.body,
+      email,
+      oldPassword: password,
+    }).catch((err) => {
       res.status(400).send(err.message);
     });
 
-    if (!user) {
+    if (!updatedUser) {
       return;
     }
-    res.send(user);
+    res.send(updatedUser);
   }
 );
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+app.listen(8080, () => {
+  console.log("Server is running on port 8080");
 });

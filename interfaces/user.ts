@@ -7,6 +7,18 @@ export type IUserLogin = Pick<
   "password" | "email"
 >;
 
-export type IUserUpdte = IUserCreate & {
+export type IUserUpdate = IUserCreate & {
   newPassword: string;
+};
+
+export type IUserFrontend = {
+  email: string;
+  senderName: string;
+  senderPhoneNo: string;
+  senderPincode: string;
+  senderAddress: string;
+  senderCity: string;
+  senderState: string;
+  oldPassword: string;
+  password: string;
 };

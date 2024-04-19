@@ -1,35 +1,22 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import type { IOrderCreate } from "../interfaces/order";
-import { customAlphabet } from "nanoid";
+import { OrderSchema } from "../schema/order";
 
 const prismaClient = new PrismaClient();
-const nanoid = customAlphabet(
-  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
-  8
-);
 
 export const CreateOrder = async (
   data: IOrderCreate
 ): Promise<Omit<Prisma.OrderDetailsCreateInput, "user">> => {
-  const status = "Pending";
-  const currentLocation = `${data.senderAddress}, ${data.senderCity}, ${data.senderPincode}, India`;
-  const orderId = nanoid();
+  const x = OrderSchema.CreateOrder.safeParse(data);
 
-  const order = await prismaClient.orderDetails.findFirst({
-    where: {
-      orderId: orderId,
-    },
-  });
-
-  if (order) {
-    return await CreateOrder(data);
+  if (!x.success) {
+    const error = JSON.parse(x.error.message);
+    throw new Error();
   }
+
   const createdOrder = await prismaClient.orderDetails.create({
     data: {
       ...data,
-      orderId,
-      status,
-      currentLocation,
     },
   });
 
