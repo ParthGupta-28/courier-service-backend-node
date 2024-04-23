@@ -40,9 +40,6 @@ export const UpdateUserBL = async (data: IUserFrontend) => {
     throw new Error(err);
   });
 
-  console.log(data);
-  console.log(user);
-
   if (!user) {
     throw new Error("User does not exist");
   }
@@ -52,8 +49,6 @@ export const UpdateUserBL = async (data: IUserFrontend) => {
   }
 
   const updateUser = IUserUpdateToCreate(data);
-
-  console.log(updateUser);
 
   const updatedUser = await UpdateUser(updateUser).catch((err) => {
     throw new Error(err);

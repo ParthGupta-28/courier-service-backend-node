@@ -18,11 +18,14 @@ app.get("/", (req: Request, res: Response) => {
 
 app.post("/users/login", async (req: Request, res: Response) => {
   const user = await LoginUserBL(req.body).catch((err) => {
-    res.status(400).send(err.message);
+    res.status(400).json({
+      title: err.message,
+      message: "please use correct credentials",
+    });
   });
 
   if (user) {
-    res.send(MapUserToRes(user));
+    res.json(MapUserToRes(user));
   }
 });
 

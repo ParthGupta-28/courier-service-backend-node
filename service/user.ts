@@ -15,14 +15,14 @@ export const CreateUser = async (data: IUserCreate) => {
   return newUser;
 };
 
-export const FindUser = async (email: string) => {
+export const FindUser = async (email: string): Promise<IUserCreate | null> => {
   const user = await prismaClient.userDetails.findFirst({
     where: {
       email,
     },
   });
   if (!user) {
-    throw new Error("User does not exist");
+    return null;
   }
   return user;
 };

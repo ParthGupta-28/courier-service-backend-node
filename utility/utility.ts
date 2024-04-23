@@ -2,14 +2,15 @@ import { customAlphabet } from "nanoid";
 import type { IUserCreate, IUserFrontend } from "../interfaces/user";
 
 export const MapUserToRes = (data: IUserCreate) => {
+  const { address, city, email, name, phoneNo, pincode, state } = data;
   return {
-    email: data.email,
-    senderName: data.name,
-    senderPhoneNo: data.phoneNo,
-    senderState: data.state,
-    senderCity: data.city,
-    senderAddress: data.address,
-    senderPincode: data.pincode,
+    email,
+    senderName: name,
+    senderPhoneNo: phoneNo,
+    senderState: state,
+    senderCity: city,
+    senderAddress: address,
+    senderPincode: pincode,
   };
 };
 
