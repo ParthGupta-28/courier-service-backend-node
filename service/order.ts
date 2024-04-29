@@ -11,7 +11,7 @@ export const CreateOrder = async (
 
     if (!x.success) {
         const error = JSON.parse(x.error.message)
-        throw new Error()
+        throw new Error(`${error}`)
     }
 
     const createdOrder = await prismaClient.orderDetails.create({
@@ -41,8 +41,5 @@ export const FindByOrderId = async (orderId: string) => {
         },
     })
 
-    if (!order) {
-        throw new Error('Order not found')
-    }
     return order
 }
