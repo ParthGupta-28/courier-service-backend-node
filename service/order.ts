@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import type { IOrderCreate, IOrderCreateResponse } from '../interfaces/order'
 import { OrderSchema } from '../schema/order'
 
@@ -11,7 +11,7 @@ export const CreateOrder = async (
 
     if (!x.success) {
         const error = JSON.parse(x.error.message)
-        throw new Error(`${error}`)
+        throw new Error(`${error.map((x: any) => x.message).join(', ')}`)
     }
 
     const createdOrder = await prismaClient.orderDetails.create({

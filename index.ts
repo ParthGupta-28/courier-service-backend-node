@@ -1,9 +1,14 @@
 import type { Express, Request, Response } from 'express'
-import { CreateUser, FindUser, UpdateUser } from './service/user'
-import { CreateOrder, FindByOrderId, GetAllOrders } from './service/order'
+import { FindUser } from './service/user'
+import { GetAllOrders } from './service/order'
 import { MapUserToRes } from './utility/utility'
-import { CreateUserBL, LoginUserBL, UpdateUserBL } from './buisnesslayer/user'
-import { CreateOrderBL } from './buisnesslayer/order'
+import {
+    CreateUserBL,
+    FindUserBL,
+    LoginUserBL,
+    UpdateUserBL,
+} from './buisnesslayer/user'
+import { CreateOrderBL, FindByOrderIdBL } from './buisnesslayer/order'
 
 const express = require('express')
 const cors = require('cors')
@@ -32,7 +37,10 @@ app.post('/users/login', async (req: Request, res: Response) => {
 
 app.post('/users', async (req: Request, res: Response) => {
     const user = await CreateUserBL(req.body).catch((err) => {
-        res.status(400).send(err.message)
+        res.status(400).json({
+            title: err.message,
+            message: 'User already exists',
+        })
     })
     if (user) {
         res.send(MapUserToRes(user))
@@ -42,7 +50,10 @@ app.post('/users', async (req: Request, res: Response) => {
 app.post('/users/:email/order', async (req: Request, res: Response) => {
     const email = req.params.email
     const user = await FindUser(email).catch((err) => {
-        res.status(400).send(err.message)
+        res.status(400).json({
+            title: err.message,
+            message: 'User not found',
+        })
     })
 
     if (!user) {
@@ -55,7 +66,7 @@ app.post('/users/:email/order', async (req: Request, res: Response) => {
         ...orderDetail,
         userDetailsEmail: email,
     }).catch((err) => {
-        res.status(400).send(err.message)
+        res.status(400).json({ message: err.message })
     })
 
     if (order) {
@@ -65,16 +76,12 @@ app.post('/users/:email/order', async (req: Request, res: Response) => {
 
 app.get('/users/:email/orders', async (req: Request, res: Response) => {
     const email = req.params.email
-    const user = await FindUser(email).catch((err) => {
-        res.status(400).send(err.message)
+    await FindUserBL(email).catch((err) => {
+        res.status(400).json({ title: err.message, message: 'User not found' })
     })
 
-    if (!user) {
-        return
-    }
-
     const orders = await GetAllOrders(email).catch((err) => {
-        res.status(400).send(err.message)
+        res.status(400).json({ message: err.message })
     })
 
     if (orders) {
@@ -84,8 +91,8 @@ app.get('/users/:email/orders', async (req: Request, res: Response) => {
 
 app.get('/users/:orderId', async (req: Request, res: Response) => {
     const orderId = req.params.orderId
-    const order = await FindByOrderId(orderId).catch((err) => {
-        res.status(400).send(err.message)
+    const order = await FindByOrderIdBL(orderId).catch((err) => {
+        res.status(400).json({ title: err.message, message: 'Order not found' })
     })
     if (!order) {
         return
@@ -93,26 +100,23 @@ app.get('/users/:orderId', async (req: Request, res: Response) => {
     res.send(order)
 })
 
-app.put(
-    '/users/update/:email/:password',
-    async (req: Request, res: Response) => {
-        const email = req.params.email
-        const password = req.params.password
+app.put('/users/update/:email', async (req: Request, res: Response) => {
+    const email = req.params.email
+    const password = req.body.currentPassword
+    console.log(password)
+    const updatedUser = await UpdateUserBL({
+        ...req.body,
+        email,
+        oldPassword: password,
+    }).catch((err) => {
+        res.status(400).json({ message: err.message })
+    })
 
-        const updatedUser = await UpdateUserBL({
-            ...req.body,
-            email,
-            oldPassword: password,
-        }).catch((err) => {
-            res.status(400).send(err.message)
-        })
-
-        if (!updatedUser) {
-            return
-        }
-        res.send(updatedUser)
-    },
-)
+    if (!updatedUser) {
+        return
+    }
+    res.send(updatedUser)
+})
 
 app.listen(8080, () => {
     console.log('Server is running on port 8080')

@@ -1,4 +1,3 @@
-import type { Prisma } from '@prisma/client'
 import { nanoid } from '../utility/utility'
 import type { IOrderBL, IOrderCreateResponse } from '../interfaces/order'
 import { CreateOrder, FindByOrderId } from '../service/order'
@@ -28,7 +27,7 @@ export const CreateOrderBL = async (
     })
 
     const { error } = await resend.emails.send({
-        from: 'BonVoyage <team@bonvoyage.com>',
+        from: 'BonVoyage',
         to: [newOrder.userDetailsEmail],
         subject: 'Bon Voyage: Courier Order Details',
         html: EmailTemplate(newOrder),
